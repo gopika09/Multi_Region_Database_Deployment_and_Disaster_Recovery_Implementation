@@ -5,7 +5,7 @@ This project focuses on creating a highly available and resilient database archi
 ## Overview :
 ![diagram](https://github.com/gopika09/Python_Flask_App_Terraform_Code/blob/main/diagram.png)
 
-## Features
+## Features:
 
 - **Cross-Region Database Replication**: Deployed Amazon RDS with cross-region read replicas to ensure data availability across multiple AWS regions.
 - **Disaster Recovery**: Implemented a disaster recovery plan using Route 53 failover routing policies to automatically switch traffic to a healthy replica during regional failures.
@@ -14,11 +14,11 @@ This project focuses on creating a highly available and resilient database archi
 - **Scalability**: Leveraged AWS’s scalable infrastructure to easily manage and expand database resources as needed.
 
 
-## Tools and Technologies
+## Tools and Technologies:
 
 - **Amazon RDS**: Managed relational database service that handles automated backups, scaling, and cross-region replication.
 - **AWS VPC**: Provides isolated and secure networking environments for database instances in multiple regions.
-- **Route 53*8: AWS’s DNS service used for failover routing, ensuring smooth traffic redirection during regional failures.
+- **Route 53**: AWS’s DNS service used for failover routing, ensuring smooth traffic redirection during regional failures.
 - **AWS EC2**: Virtual servers used to manage and monitor the database environment and any related application workloads.
 - **Amazon S3** : Utilized for backup storage, ensuring long-term data availability and recovery.
 - **Elastic Load Balancer (ELB)**: Distributes incoming traffic across EC2 instances, ensuring high availability and redundancy.
@@ -34,7 +34,7 @@ If the HTTP response from this endpoint returns a status code of 4xx or 5xx (ind
 In the event of a disaster, uploading a designated file to the S3 bucket in the secondary region triggers the failover by causing the Route 53 health check for the primary region to fail, allowing the secondary region to take over.
  
 
-## Steps to Deploy
+## Steps to Deploy:
 
 I started by creating two VPCs: one in the ap-south-1 region (the primary region) and another in ap-northeast-1 (the secondary region). Each VPC had one public and one private subnet. Once I had that basic network architecture set up, I moved on to configuring the RDS.
 
@@ -79,7 +79,7 @@ Finally, I returned to the Route 53 public hosted zone and created the failover 
 
 After completing these steps, the solution was in place. The application was now set up for seamless failover between the primary and secondary regions. Should a disaster occur, I could simply upload a file to the S3 bucket in the secondary region, causing Route 53 to automatically switch traffic to the secondary RDS and EC2 instances without needing to make manual changes to the application configuration. This ensured that the setup was resilient, reliable, and capable of handling any regional outages.
 
-##Key Considerations for Cross-Region Failover
+## Key Considerations for Cross-Region Failover:
 
 When preparing for a cross-region failover, several critical factors must be taken into account:
 
@@ -96,7 +96,7 @@ When preparing for a cross-region failover, several critical factors must be tak
    Monitor the replica lag for the RDS for SQL Server read replica in the secondary region. It must remain within an acceptable range for the business (Recovery Point Objective - RPO). Initiating a cross-region failover with non-zero replica lag can potentially lead to data loss, which is a significant risk to manage.
 
 
-##Implementing the Failover:
+## Implementing the Failover:
 
 With these considerations in place, it was time to implement the failover. I declared a disaster recovery event, and the first step was to disable writes on the RDS for SQL Server instance in the primary region. To avoid any accidental writes during the failover process, I stopped the application, ensuring that no data would be inadvertently modified.
 
@@ -120,7 +120,7 @@ Secondary region service up and running:
 
 ![Security Groups](path_to_image/security_groups.png)
 
-## Conclusion
+## Conclusion:
 
 
 ​The Multi-Region Database Deployment and Disaster Recovery Implementation project demonstrates the importance of resilience and availability in cloud-based infrastructures. By deploying an Amazon RDS instance with cross-region read replicas and utilizing Route 53 failover policies, the project ensures that critical data remains accessible even during regional outages or disasters. This architecture not only improves data redundancy and minimizes downtime but also provides a scalable and fault-tolerant solution that guarantees business continuity. Ultimately, this setup highlights best practices for disaster recovery and showcases the ability to build robust, highly available systems in AWS.
