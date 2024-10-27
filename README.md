@@ -3,7 +3,7 @@
 This project focuses on creating a highly available and resilient database architecture across multiple AWS regions. By deploying an Amazon RDS instance with cross-region read replicas, this project ensures data availability and minimizes downtime in the event of regional failures. The disaster recovery plan incorporates AWS Route 53 failover policies, which automatically reroute traffic to the backup region, guaranteeing uninterrupted database access during outages. This setup demonstrates the effective use of AWS services to achieve scalability, data redundancy, and fault tolerance, ensuring business continuity.
 
 ## Overview :
-![diagram](https://github.com/gopika09/Python_Flask_App_Terraform_Code/blob/main/diagram.png)
+![diagram](https://github.com/gopika09/Multi_Region_Database_Deployment_and_Disaster_Recovery_Implementation/blob/main/images/overview.png)
 
 ## Features :
 
@@ -38,13 +38,17 @@ In the event of a disaster, uploading a designated file to the S3 bucket in the 
 
 I started by creating two VPCs: one in the ap-south-1 region (the primary region) and another in ap-northeast-1 (the secondary region). Each VPC had one public and one private subnet. Once I had that basic network architecture set up, I moved on to configuring the RDS.
 
-![VPC Architecture](path_to_image/vpc.png)
+![diagram](https://github.com/gopika09/Multi_Region_Database_Deployment_and_Disaster_Recovery_Implementation/blob/main/images/vpc%201.png)
+
+![diagram](https://github.com/gopika09/Multi_Region_Database_Deployment_and_Disaster_Recovery_Implementation/blob/main/images/vpc%202.png)
 
 
 
 I created a DB subnet group and associated it with subnets, then launched an RDS instance using MySQL as the database engine. For the instance class, I went with "db.t3.micro." After setting the database username, password, and the initial database name, I made sure to attach the correct security group so that access to the RDS instance was secure. Once everything looked good, I created a read replica in the ap-northeast-1 region for redundancy and failover purposes. I captured the endpoints for the primary and secondary RDS instances to use later in the configuration.
 
-![Security Groups](path_to_image/security_groups.png)
+![diagram](https://github.com/gopika09/Multi_Region_Database_Deployment_and_Disaster_Recovery_Implementation/blob/main/images/db_primary.png)
+
+![diagram](https://github.com/gopika09/Multi_Region_Database_Deployment_and_Disaster_Recovery_Implementation/blob/main/images/read%20replica.png)
 
 
 
@@ -52,30 +56,32 @@ Next, I deployed EC2 instances and set up load balancers in both the primary and
 
 
 
-![Security Groups](path_to_image/security_groups.png)
+![diagram](https://github.com/gopika09/Multi_Region_Database_Deployment_and_Disaster_Recovery_Implementation/blob/main/images/db%20string.png)
 
 
 Then came the Route 53 setup. I created a private hosted zone in Route 53 and associated the VPCs for both regions with it. This private hosted zone would handle the internal routing of traffic within the VPCs. I added two CNAME records to this zone—one for the RDS instance in the primary region and another for the secondary region. This step ensured that the application would always use these CNAME records to connect to the database, simplifying things when a failover occurred.
 
-![Security Groups](path_to_image/security_groups.png)
+![diagram](https://github.com/gopika09/Multi_Region_Database_Deployment_and_Disaster_Recovery_Implementation/blob/main/images/private%20hosyed%20zone.png)
 
 
 
 To prepare for disaster recovery, I created S3 buckets in both the primary and secondary regions. These buckets would store the disaster recovery file, and I restricted access to them to ensure security. At this stage, the buckets were empty because both regions were still functioning normally. 
 
-![Security Groups](path_to_image/security_groups.png)
+![diagram](https://github.com/gopika09/Multi_Region_Database_Deployment_and_Disaster_Recovery_Implementation/blob/main/images/s3.png)
 
 
 
 The next step was setting up a public hosted zone in Route 53 to manage internet traffic for the domain. I also created two Route 53 health checks—one for the primary region and one for the secondary. For the primary region's health check, I set it up to monitor the S3 endpoint in the secondary region. If that S3 file became accessible (meaning the secondary region was in use), the health check would fail, triggering the failover. I enabled the 'Invert health check status' option to make sure the failover would only happen if the primary region became inaccessible. I repeated these steps to create a health check for the secondary region, this time monitoring the S3 endpoint in the primary region. 
 
-![Security Groups](path_to_image/security_groups.png)
+![diagram](https://github.com/gopika09/Multi_Region_Database_Deployment_and_Disaster_Recovery_Implementation/blob/main/images/public%20zone.png)
+
+![diagram](https://github.com/gopika09/Multi_Region_Database_Deployment_and_Disaster_Recovery_Implementation/blob/main/images/health%20checks.png)
 
 
 Finally, I returned to the Route 53 public hosted zone and created the failover records. For each region, I defined the failover routing policy and linked it to the Application Load Balancers in both the primary and secondary regions. I also associated each record with the appropriate health check so that Route 53 would know when to switch between regions.
 
 
-![Security Groups](path_to_image/security_groups.png)
+![diagram](https://github.com/gopika09/Multi_Region_Database_Deployment_and_Disaster_Recovery_Implementation/blob/main/images/public%20hosted%20zone.png)
 
 After completing these steps, the solution was in place. The application was now set up for seamless failover between the primary and secondary regions. Should a disaster occur, I could simply upload a file to the S3 bucket in the secondary region, causing Route 53 to automatically switch traffic to the secondary RDS and EC2 instances without needing to make manual changes to the application configuration. This ensured that the setup was resilient, reliable, and capable of handling any regional outages.
 
@@ -105,20 +111,20 @@ I then turned my attention to the secondary region. Here, I verified the lag on 
 The next task was to upload the recovery file to the Amazon S3 bucket in the secondary region. This action was crucial because it would trigger a Route 53 health check failure for the primary region. Given that I had enabled the "invert health check status" option in Route 53, I knew that this failure would signal the health check agents that something was wrong.
 
 
-![Security Groups](path_to_image/security_groups.png)
+![diagram](https://github.com/gopika09/Multi_Region_Database_Deployment_and_Disaster_Recovery_Implementation/blob/main/images/unhealthy.png)
 
 
 As expected, once the primary region was marked as unhealthy, Route 53 initiated the failover, redirecting internet traffic to the secondary region. I watched the process unfold, knowing that the delays in failover would depend on the health check settings, request intervals, and failure thresholds I had previously configured.
 
-## Results:
+## Results :
 
 Primary region service unavailable:
 
-![Security Groups](path_to_image/security_groups.png)
+![diagram](https://github.com/gopika09/Multi_Region_Database_Deployment_and_Disaster_Recovery_Implementation/blob/main/images/primary%20unavailable.png)
 
 Secondary region service up and running:
 
-![Security Groups](path_to_image/security_groups.png)
+![diagram](https://github.com/gopika09/Multi_Region_Database_Deployment_and_Disaster_Recovery_Implementation/blob/main/images/secondary%20running.png)
 
 ## Conclusion :
 
